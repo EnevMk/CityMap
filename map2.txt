@@ -1,0 +1,10 @@
+9
+Prague Helsinki 1845 London 1264 Sofia 1066
+Beijing New_York 11550 London 8132 Tokyo 1303
+Helsinki Tokyo 7815
+London Tokyo 9566 Sofia 2014 Prague 1033
+New_York London 5567
+Tokyo New_York 10838 Jakarta 5782
+Jakarta Beijing 4616
+Sofia Prague 1066 London 2014 Paris 2169
+Paris Prague 882 London 342 Beijing 8217 
