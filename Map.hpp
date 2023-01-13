@@ -68,8 +68,10 @@ class Map {
     unsigned getNextUnvisitedID(vertexPriorityQueue& queue, const listVisitedVertices& visited) const;
     bool existsPath(const std::vector<unsigned>& neighbors, unsigned targetID) const;
 
-    /* pair<string, unsigned> */Path dijkstraSPT(unsigned sourceID, unsigned targetID) const;
+    /* pair<string, unsigned> */Path targetedDijkstra(unsigned sourceID, unsigned targetID) const;
     //std::vector<Path> getFirstKShortestPaths()
+
+    /* Path */pair<vector<int>, vector<int>> dijkstraSPT(unsigned sourceID, unsigned targetID, std::function<bool(unsigned)> stopAlgorithm) const;
     
     using pathsPriorityQueue = priority_queue<Path, vector<Path>, pathCompare>;
     
@@ -90,11 +92,10 @@ public:
     Map(const Map& obj);
     void print() const;
 
-    
+    Path findCycle(const string& startCity) const;
     bool findPath(const string& startCity, const string& endCity);
-
-    
     Path shortestPath(const string& startCity, const string& endCity);
+    bool canVisitAllVerticesFrom(const string& city) const;
 
     template <class VerticesCriteria>
     std::vector<Path> getFirstKShortestPaths(unsigned sourceID, unsigned targetID, unsigned k, VerticesCriteria) const;

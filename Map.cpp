@@ -173,7 +173,7 @@ Path Map::shortestPath(const string &startCityName, const string &endCityName)
     auto source = getCityID(startCityName),
          target = getCityID(endCityName);
 
-    Path result = dijkstraSPT(source, target);
+    Path result = targetedDijkstra(source, target);
 
     if (result.length == 0) {
         throw range_error("No path found!");
@@ -181,7 +181,18 @@ Path Map::shortestPath(const string &startCityName, const string &endCityName)
     return result;
 }
 
-Path Map::dijkstraSPT(unsigned sourceID, unsigned targetID) const {
+Path Map::targetedDijkstra(unsigned sourceID, unsigned targetID) const {
+    auto result = dijkstraSPT(sourceID, targetID, [targetID](unsigned id) { return id == targetID; });
+
+    const std::vector<int> parents = result.first,
+                           visited = result.second;
+
+    vector<unsigned> verticesPath;
+    getPath(parents, targetID, verticesPath);
+    return Path{verticesPath, visited[targetID]};
+}
+
+/* Path */pair<vector<int>, vector<int>> Map::dijkstraSPT(unsigned sourceID, unsigned targetID, std::function<bool(unsigned)> shouldStopAlgorithm) const {
     vector<int> parents(this->adjacencyMatrix.size(), -1); // parents[i] holds the parent of vertex with id i
     parents[sourceID] = -1;
     
@@ -191,24 +202,22 @@ Path Map::dijkstraSPT(unsigned sourceID, unsigned targetID) const {
     visited[sourceID] = 0;
     minPriorityQueue.push(sourceID);
     unsigned currentVertexID = sourceID;
-    while (/* !isVisited(targetID, visited) */ !minPriorityQueue.empty() && currentVertexID != targetID) {
+
+    while (!minPriorityQueue.empty() && !shouldStopAlgorithm(currentVertexID)) {
         currentVertexID = minPriorityQueue.top();
         minPriorityQueue.pop();
-        auto neighbors = adjacencyMatrix[currentVertexID].getNeighbors();
 
+        auto neighbors = adjacencyMatrix[currentVertexID].getNeighbors();
         for (unsigned id = 0; id < neighbors.size(); ++id) {
 
-            if (existsPath(neighbors, id) && (!isVisited(id, visited) || (int)neighbors[id] + visited[currentVertexID] < visited[id])) {   
+            if (existsPath(neighbors, id) && (!isVisited(id, visited) || neighbors[id] + visited[currentVertexID] < visited[id])) {   
                 minPriorityQueue.push(id);
                 visited[id] = (int)neighbors[id] + visited[currentVertexID];
                 parents[id] = currentVertexID;
             }
         }
     }
-
-    vector<unsigned> verticesPath;
-    getPath(parents, targetID, verticesPath);
-    return Path{verticesPath, visited[targetID]};
+    return make_pair(parents, visited);
 }
 
 void Map::getPath(const vector<int> &parents, unsigned current, vector<unsigned> &result) const
@@ -233,7 +242,7 @@ Path Map::getShortestDeviationAt(unsigned ithVertex, const Path &path, const uno
         auto neighborName = adjacencyMatrix[id].getName();
 
         if (neighbors[id] > 0 && verticesToAvoid.find(id) == verticesToAvoid.end() && predicate(neighborName)) {   
-            minPriorityQueue.push(dijkstraSPT(id, path.destination()));
+            minPriorityQueue.push(targetedDijkstra(id, path.destination()));
         }
     }
 
@@ -246,7 +255,7 @@ Path Map::getShortestDeviationAt(unsigned ithVertex, const Path &path, const uno
 
 template <class VerticesCriteria>
 std::vector<Path> Map::getFirstKShortestPaths(unsigned sourceID, unsigned targetID, unsigned k, VerticesCriteria predicate) const {
-    Path shortestPath = dijkstraSPT(sourceID, targetID);
+    Path shortestPath = targetedDijkstra(sourceID, targetID);
     pathsPriorityQueue minPriorityQueue;
 
     vector<Path> toReturn{shortestPath};
@@ -340,4 +349,40 @@ std::vector<Path> Map::getFirstKShortestPaths(const string& startCity, const str
         }
     };
     return getFirstKShortestPaths(source, target, k, ClosedVertices(closedVertices));
+}
+
+Path Map::findCycle(const string& startCity) const {
+    auto source = getCityID(startCity);
+    auto neighbors = adjacencyMatrix[source].getNeighbors();
+
+    Path toReturn = Path{vector<unsigned>{source}};
+
+    for (size_t id = 0; id < neighbors.size(); ++id) {
+        
+        if (existsPath(neighbors, id)) {
+            Path path = targetedDijkstra(id, source);
+
+            if (path.length != 0) {
+                toReturn.append(path, *this);
+                return toReturn;
+            }
+        }
+    }
+    throw invalid_argument("Couldn't find a cycle from " + startCity + " to itself!");
+}
+
+bool Map::canVisitAllVerticesFrom(const string& city) const {
+    auto source = getCityID(city);
+
+    auto result = dijkstraSPT(source, source, [](int) { return false; });
+
+    const std::vector<int>& visited = result.second;
+
+    bool allVisited = true;
+    for (size_t i = 0; i < visited.size() && allVisited; ++i) {
+        if (visited[i] == -1) {
+            allVisited = false;
+        }
+    }
+    return allVisited;
 }

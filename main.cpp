@@ -53,16 +53,20 @@ int main() {
     auto map = r.readMap(path);
 
     //map.print();
-    auto paths = map.getFirstKShortestPaths("Jakarta", "Prague", 3, unordered_set<string>{"Paris"});
+    /* auto paths = map.getFirstKShortestPaths("Jakarta", "Prague", 3, unordered_set<string>{"Paris"});
 
     for (int i = 0; i < paths.size(); ++i) {
         paths[i].print(map);
-    }
-    //map.shortestPath("Beijing", "London").print();
+    } */
+    /* auto cycle = map.findCycle("Tokyo");
 
-    std::ofstream os("map2.dot");
+    cycle.print(map); */
+
+    std::cout << map.canVisitAllVerticesFrom("Prague") << '\n';
+
+    /* std::ofstream os("map2.dot");
     toDotty(os, map);
-    os.close();
+    os.close(); */
 
 
     return 0;
