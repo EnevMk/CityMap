@@ -1,8 +1,8 @@
 #include <iostream>
-#include "MapReader.hpp"
-#include "utils.hpp"
-#include "data_structures/Hashmap.hpp"
-#include "ToDotty.hpp"
+#include "../headers/MapReader.hpp"
+#include "../data_structures/Hashmap.hpp"
+#include "../utilities/ToDotty.hpp"
+#include "../utilities/utils.hpp"
 
 #include <iomanip>
 #include <memory>
@@ -49,9 +49,8 @@ int main() {
     std::cout << map.find("Name"); */
 
     MapReader r;
-    fs::path path = "map.txt";
+    fs::path path = "maps/map.txt";
     auto map = r.readMap(path);
-    std::cout << "rico rico\n";
 
     //map.print();
     /* auto paths = map.getFirstKShortestPaths("Jakarta", "Prague", 3, unordered_set<string>{"Paris"});
@@ -65,18 +64,20 @@ int main() {
 
     //std::cout << map.canVisitAllVerticesFrom("Prague") << '\n';
 
-    auto deadEnds = map.findAllDeadEndStreets();
+    /* auto deadEnds = map.findAllDeadEndStreets();
     for (const Path& p : deadEnds) {
         p.print(map);
-    }
+    } */
 
     /* std::ofstream os("map2.dot");
     toDotty(os, map);
     os.close(); */
 
-    //std::cout << map.getInDegree("Tokyo") << ' ' << map.getOutDegree("Tokyo") << '\n';
-    auto ep = map.getEulerPath();
+    std::cout << map.getInDegree("Попа") << ' ' << map.getOutDegree("Попа") << '\n';
+    auto c = map.findCycle("НДК");
+    c.print(map);
+    /* auto ep = map.getEulerPath();
 
-    ep.print(map);
+    ep.print(map); */
     return 0;
 }

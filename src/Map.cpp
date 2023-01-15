@@ -1,5 +1,5 @@
-#include "Map.hpp"
-#include "Path.hpp"
+#include "../headers/Map.hpp"
+#include "../headers/Path.hpp"
 
 Vertex::Vertex() {}
 
@@ -475,6 +475,8 @@ Path Map::getEulerPath() const {
         std::unordered_set<string> traversedEdges;
         Path toReturn;
         dfsEulerPath(traversedEdges, toReturn, start, 0);
+
+        std::reverse(toReturn.vertices.begin(), toReturn.vertices.end());
         return toReturn;
     }
 

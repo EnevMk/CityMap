@@ -1,4 +1,4 @@
-#include "MapReader.hpp"
+#include "../headers/MapReader.hpp"
 
 pair<vector<unsigned>, unsigned> readNeighbors(std::ifstream& is,
                    Hashmap<shared_ptr<const string>, unsigned, MyHashFunction, MyEqualityOperator>& nameToIDMap,
@@ -71,7 +71,7 @@ Map MapReader::readMap(const fs::path &filePath) const {
 }
 
 void MapReader::updateInDegrees(vector<Vertex>& adjacencyMatrix) const {
-
+    
     for (size_t i = 0; i < adjacencyMatrix.size(); ++i) {
 
         for (size_t j = 0; j < adjacencyMatrix.size(); ++j) {

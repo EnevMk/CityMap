@@ -4,7 +4,7 @@
 #include <functional>
 #include <utility>
 
-#include "Path.hpp"
+#include "../headers/Path.hpp"
 
 using namespace std;
 
@@ -13,19 +13,14 @@ struct MyEqualityOperator /* : binary_function<string, shared_ptr<string>, bool>
     using is_transparent = void;
 
     bool operator()(const shared_ptr<const string>& sharedValue0, const shared_ptr<const string>& sharedValue1) const {
-        //*sharedValue = "ppaos";
         return *sharedValue0 == *sharedValue1;
     }
 
-    bool operator()(const string& value, const shared_ptr<const string>& sharedValue) const {
-        //*sharedValue = "ppaos";
-        
+    bool operator()(const string& value, const shared_ptr<const string>& sharedValue) const {       
         return value == *sharedValue;
     }
 
     bool operator()(const shared_ptr<const string>& sharedValue, const string& value) const {
-        //*sharedValue = "ppaos";
-        //std::cout << "bambino\n";
         return value == *sharedValue;
     }
     
@@ -58,12 +53,12 @@ struct pathCompare {
     }
 };
 
-using Edge = std::pair<unsigned, unsigned>;
+/* using Edge = std::pair<unsigned, unsigned>;
 
 struct EdgeHash {
     size_t operator()(const Edge& edge) const {
         return std::hash<unsigned>()(edge.first) + std::hash<unsigned>()(edge.second);
     }
-};
+}; */
 
 //auto pathCompare = [](const Path &p1, const Path &p2) constexpr { return p1.length > p2.length; } ;

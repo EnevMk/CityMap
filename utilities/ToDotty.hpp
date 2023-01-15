@@ -3,7 +3,7 @@
 #include <iostream>
 #include <fstream>
 //#include "treeutils.cpp"
-#include "Map.hpp"
+#include "../headers/Map.hpp"
 
 //#include "BinaryTree.hpp"
 /* 
@@ -34,25 +34,7 @@ void nodeToDotty(std::ofstream& os, const Map& map) {
                     "[color=\"green\", label=\"" << adjacencyMatrix[id][neighborID] << "\"]\n";
             }
         }
-    }
-    /* if (!node) {
-        return;
-    }
-
-    nodeToDotty<T>(os, node->left);
-    nodeToDotty<T>(os, node->right);
-
-    os << (long long)node << " [label=\"" << node->data << "\"];" << '\n';
-
-    if (node->left) {
-        os << (long long)node << "->" << (long long)node->left
-            << "[color=\"red\", label=\"L\"];" << '\n';
-    }
-    if (node->right) {
-        os << (long long)node << "->" << (long long)node->right
-            << "[color=\"blue\", label=\"R\"];" << '\n';
-    } */
-    
+    }    
 }
 
 //template <typename T>

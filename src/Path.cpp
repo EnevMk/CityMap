@@ -1,5 +1,5 @@
-#include "Path.hpp"
-#include "Map.hpp"
+#include "../headers/Path.hpp"
+#include "../headers/Map.hpp"
 
 const std::vector<unsigned>& Path::getVertices() const {
     return vertices;
