@@ -49,11 +49,11 @@ int main() {
     std::cout << map.find("Name"); */
 
     MapReader r;
-    fs::path path = "maps/map.txt";
+    fs::path path = "maps/map2.txt";
     auto map = r.readMap(path);
 
     //map.print();
-    /* auto paths = map.getFirstKShortestPaths("Jakarta", "Prague", 3, unordered_set<string>{"Paris"});
+    /* auto paths = map.getFirstKShortestPaths("Prague", "Beijing", 3);
 
     for (int i = 0; i < paths.size(); ++i) {
         paths[i].print(map);
@@ -73,8 +73,8 @@ int main() {
     toDotty(os, map);
     os.close(); */
 
-    std::cout << map.getInDegree("Попа") << ' ' << map.getOutDegree("Попа") << '\n';
-    auto c = map.findCycle("НДК");
+    //std::cout << map.getInDegree("Попа") << ' ' << map.getOutDegree("Попа") << '\n';
+    auto c = map.shortestPath("Prague", "Beijing");
     c.print(map);
     /* auto ep = map.getEulerPath();
 

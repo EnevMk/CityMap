@@ -21,6 +21,8 @@ SCENARIO("MapReader class reads a valid .txt file of a Graph correctly") {
 
         MapReader reader;
         fs::path path = "maps/map.txt";
+        fs::path path2 = "maps/map2.txt";
+        
 
         WHEN("Feeding the .txt to that reader") {
 
@@ -36,6 +38,11 @@ SCENARIO("MapReader class reads a valid .txt file of a Graph correctly") {
             THEN("ID of vertex labeled Попа is 0") {
                 REQUIRE(adjMatrix[0].getName() == "Попа");
             }
+
+            THEN("ID of vertex labeled Попа is 0") {
+                REQUIRE(adjMatrix[0].getName() == "Попа");
+            }
+
             THEN("Edges from НДК to Попа exist") {
                 REQUIRE(map.existsPath(adjMatrix[3].getNeighbors(), 0) == true);
             }
@@ -49,6 +56,21 @@ SCENARIO("MapReader class reads a valid .txt file of a Graph correctly") {
                 REQUIRE(map.getOutDegree("Попа") == 2);
             }
 
+            Map bigMap = reader.readMap(path2);
+            auto bigAdjMatrix = bigMap.getAdjacencyMatrix();
+
+            THEN("ID of vertex labeled Prague is 0") {
+                REQUIRE(bigAdjMatrix[0].getName() == "Prague");
+            }
+
+            THEN("ID of vertex labeled Sofia is 3") {
+                REQUIRE(bigAdjMatrix[3].getName() == "Sofia");
+            }
+
+            THEN("Distance from Prague to Sofia is 1066") {
+                REQUIRE(bigAdjMatrix[3][0] == 1066);
+            }
+
         }
     }
 }
@@ -57,8 +79,9 @@ SCENARIO("Test a graph for cycle") {
     MapReader reader;
     fs::path path = "maps/map.txt";
 
+    Map map = reader.readMap(path);
     WHEN("Given this graph") {
-        Map map = reader.readMap(path);
+        
 
         THEN("A cycle with start and end point НДК exists with length 2200") {
 
@@ -72,3 +95,23 @@ SCENARIO("Test a graph for cycle") {
         } */
     }
 }
+
+
+
+TEST_CASE("Pathfinding") {
+
+    MapReader reader;
+    fs::path path = "maps/map2.txt";    
+    Map map = reader.readMap(path);
+
+    SECTION("Test pathfinding") {
+        REQUIRE(map.findPath("Prague", "Beijing") == true);
+    }
+
+    SECTION("Test shortest path finding") {
+
+        Path expectedPath{vector<unsigned>{0, 3, 8, 4}, 11452};
+        REQUIRE(equalPaths(map.shortestPath("Prague",  "Beijing"), expectedPath) == true);
+    }
+}
+

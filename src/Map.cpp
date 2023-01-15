@@ -205,24 +205,25 @@ Path Map::targetedDijkstra(unsigned sourceID, unsigned targetID) const {
     vector<int> parents(this->adjacencyMatrix.size(), -1); // parents[i] holds the parent of vertex with id i
     parents[sourceID] = -1;
     
-    std::priority_queue<unsigned, vector<unsigned>, std::greater<unsigned>> minPriorityQueue; // pair a vertex id and distance from sourceID to that vertex
+    vertexPriorityQueue minPriorityQueue;
     std::vector<int> visited(this->adjacencyMatrix.size(), -1);
     
     visited[sourceID] = 0;
-    minPriorityQueue.push(sourceID);
+    minPriorityQueue.push(make_pair(sourceID, 0));
     unsigned currentVertexID = sourceID;
 
     while (!minPriorityQueue.empty() && !shouldStopAlgorithm(currentVertexID)) {
-        currentVertexID = minPriorityQueue.top();
+        currentVertexID = minPriorityQueue.top().first;
+        std::cout << currentVertexID << '\n';
         minPriorityQueue.pop();
 
         auto neighbors = adjacencyMatrix[currentVertexID].getNeighbors();
         for (unsigned id = 0; id < neighbors.size(); ++id) {
 
-            if (existsPath(neighbors, id) && (!isVisited(id, visited) || neighbors[id] + visited[currentVertexID] < visited[id])) {   
-                minPriorityQueue.push(id);
-                visited[id] = (int)neighbors[id] + visited[currentVertexID];
+            if (existsPath(neighbors, id) && (!isVisited(id, visited) || neighbors[id] + visited[currentVertexID] < visited[id])) {
+                visited[id] = visited[currentVertexID] + neighbors[id];
                 parents[id] = currentVertexID;
+                minPriorityQueue.push(make_pair(id, visited[id]));
             }
         }
     }
@@ -299,9 +300,6 @@ std::unordered_set<unsigned> Map::getVerticesToAvoidAt(unsigned levelK, const st
         if (p.equalUntil(p.size() - 1, bestPaths[i])) {
             toReturn.insert(bestPaths[i][levelK]);
         }
-    }
-    if (p.size() == 3 && toReturn.find(5) != toReturn.cend()) {
-        std::cout << "noice " << levelK << '\n';
     }
 
     for (auto i = 0; i < p.size(); ++i) {

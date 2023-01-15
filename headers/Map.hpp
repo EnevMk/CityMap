@@ -68,6 +68,7 @@ private:
 
     pair<vector<int>, vector<int>> dijkstraSPT(unsigned sourceID, unsigned targetID, std::function<bool(unsigned)> stopAlgorithm) const;
     
+    using vertexPriorityQueue = priority_queue<pair<unsigned, unsigned>, vector<pair<unsigned, unsigned>>, HeapCompareGreater>;
     using pathsPriorityQueue = priority_queue<Path, vector<Path>, pathCompare>;
     
 
