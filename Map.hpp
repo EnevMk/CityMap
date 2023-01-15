@@ -8,6 +8,8 @@
 #include <unordered_set>
 #include <memory>
 #include <queue>
+#include <cmath>
+#include <list>
 
 
 #include "utils.hpp"
@@ -31,11 +33,17 @@ class Vertex {
 
     vector<unsigned> neighbors;
 
+    unsigned outDegree;
+    unsigned inDegree;
+
+    friend class MapReader;
 public:
     Vertex();
-    Vertex(const std::shared_ptr<const std::string> sharedName, std::vector<unsigned>&& neighbors);
+    Vertex(const std::shared_ptr<const std::string> sharedName, std::vector<unsigned>&& neighbors, unsigned outDegree);
     Vertex(unsigned citiesCount);
     const string& getName() const;
+    unsigned getOutDegree() const;
+    unsigned getInDegree() const;
     void setNeighbors(std::vector<unsigned>&& neighbors);
     //unsigned getID() const;
     const vector<unsigned>& getNeighbors() const;
@@ -44,8 +52,8 @@ public:
 
     unsigned& operator[](size_t i);
     const unsigned& operator[](size_t i) const;
+    //friend void nodeToDotty(std::ofstream& os, const Map& map);
 
-    friend void nodeToDotty(std::ofstream& os, const Map& map);
     //void setID(unsigned id);
 
     //void addNeighbor(unsigned id, double dist);
@@ -60,12 +68,12 @@ class Map {
 
     vector<Vertex> adjacencyMatrix;
 
-    using vertexPriorityQueue = priority_queue<pair<unsigned, int>, vector<pair<unsigned, int>>, HeapCompareGreater>;
+    //using vertexPriorityQueue = priority_queue<pair<unsigned, int>, vector<pair<unsigned, int>>, HeapCompareGreater>;
     using listVisitedVertices = std::vector<int>;
 
     bool dfs(std::vector<bool>& visited, unsigned startID, unsigned endID);
     bool isVisited(unsigned id, const vector<int>& listVisited) const;
-    unsigned getNextUnvisitedID(vertexPriorityQueue& queue, const listVisitedVertices& visited) const;
+    //unsigned getNextUnvisitedID(vertexPriorityQueue& queue, const listVisitedVertices& visited) const;
     bool existsPath(const std::vector<unsigned>& neighbors, unsigned targetID) const;
 
     /* pair<string, unsigned> */Path targetedDijkstra(unsigned sourceID, unsigned targetID) const;
@@ -80,11 +88,15 @@ class Map {
 
     unsigned getCityID(const string& name) const;
 
-    Path intersectPaths(const vector<Path>& paths) const;
+    //Path intersectPaths(const vector<Path>& paths) const;
 
     std::unordered_set<unsigned> getVerticesToAvoidAt(unsigned levelK, const std::vector<Path>& bestPaths, const Path& p) const;
 
+    
 public:
+    bool isEulerianPathPossible() const;
+
+    unsigned findStartNode() const;
     
     size_t citiesCount() const;
     Map(vector<Vertex>&& adjacencyMatrix, 
@@ -108,4 +120,16 @@ public:
     void getPath(const vector<int>& parents, unsigned current, vector<unsigned>& result) const;
 
     const Hashmap<std::shared_ptr<const string>, unsigned, MyHashFunction, MyEqualityOperator>& getNameToIDMap() const;
+
+    vector<Path> findAllDeadEndStreets() const;
+    vector<unsigned> getDeadEndVertices() const;
+
+    unsigned getInDegree(const string& name) const;
+    unsigned getOutDegree(const string& name) const;
+
+    using Edge = std::pair<unsigned, unsigned>;
+
+    void dfsEulerPath(std::unordered_set<string>& traversedEdges, Path& eulerPath, unsigned at, unsigned edgePrice) const;
+
+    Path getEulerPath() const;
 };

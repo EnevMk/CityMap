@@ -58,4 +58,12 @@ struct pathCompare {
     }
 };
 
+using Edge = std::pair<unsigned, unsigned>;
+
+struct EdgeHash {
+    size_t operator()(const Edge& edge) const {
+        return std::hash<unsigned>()(edge.first) + std::hash<unsigned>()(edge.second);
+    }
+};
+
 //auto pathCompare = [](const Path &p1, const Path &p2) constexpr { return p1.length > p2.length; } ;

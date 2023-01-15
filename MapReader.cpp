@@ -1,6 +1,6 @@
 #include "MapReader.hpp"
 
-vector<unsigned> readNeighbors(std::ifstream& is,
+pair<vector<unsigned>, unsigned> readNeighbors(std::ifstream& is,
                    Hashmap<shared_ptr<const string>, unsigned, MyHashFunction, MyEqualityOperator>& nameToIDMap,
                    unsigned &idAccumulator,
                    unsigned totalNodeCount
@@ -10,10 +10,10 @@ vector<unsigned> readNeighbors(std::ifstream& is,
 
 {   
     vector<unsigned> neighbors(totalNodeCount, 0);
-    while (is.peek() != '\n' && !is.eof())
-    {
+    unsigned outDegree = 0;
+    while (is.peek() != '\n' && !is.eof()) {
         string neighborName;
-        double distance;
+        unsigned distance;
         is >> neighborName >> distance;
 
         auto it = nameToIDMap.find(neighborName);
@@ -23,17 +23,16 @@ vector<unsigned> readNeighbors(std::ifstream& is,
             auto sharedName = make_shared<string>(neighborName);
             nameToIDMap.insert(sharedName, idAccumulator);
             neighborId = idAccumulator++;
-        }
-        else {
+        } else {
             neighborId = it->second;
         }
         neighbors[neighborId] = distance;
+        outDegree++;
     }
-
-    return neighbors;
+    return make_pair(neighbors, outDegree);
 }
 
-Map MapReader::readMap(const fs::path &filePath) {
+Map MapReader::readMap(const fs::path &filePath) const {
 
     std::ifstream is(filePath.string());
 
@@ -64,9 +63,22 @@ Map MapReader::readMap(const fs::path &filePath) {
         }
         
         auto neighbors = readNeighbors(is, map, id, citiesCount);
-        adjacencyMatrix[currentId] = Vertex(map.find(name)->first, std::move(neighbors));
-        //result.insert(std::make_pair(v.getID(), v));
+        adjacencyMatrix[currentId] = Vertex(map.find(name)->first, std::move(neighbors.first), neighbors.second);
     }
     is.close();
+    updateInDegrees(adjacencyMatrix);
     return Map(std::move(adjacencyMatrix), std::move(map));
+}
+
+void MapReader::updateInDegrees(vector<Vertex>& adjacencyMatrix) const {
+
+    for (size_t i = 0; i < adjacencyMatrix.size(); ++i) {
+
+        for (size_t j = 0; j < adjacencyMatrix.size(); ++j) {
+
+            if (adjacencyMatrix[j][i] > 0) {
+                adjacencyMatrix[i].inDegree++;
+            }
+        }
+    }
 }

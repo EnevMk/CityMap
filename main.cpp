@@ -49,8 +49,9 @@ int main() {
     std::cout << map.find("Name"); */
 
     MapReader r;
-    fs::path path = "map2.txt";
+    fs::path path = "map.txt";
     auto map = r.readMap(path);
+    std::cout << "rico rico\n";
 
     //map.print();
     /* auto paths = map.getFirstKShortestPaths("Jakarta", "Prague", 3, unordered_set<string>{"Paris"});
@@ -62,12 +63,20 @@ int main() {
 
     cycle.print(map); */
 
-    std::cout << map.canVisitAllVerticesFrom("Prague") << '\n';
+    //std::cout << map.canVisitAllVerticesFrom("Prague") << '\n';
+
+    auto deadEnds = map.findAllDeadEndStreets();
+    for (const Path& p : deadEnds) {
+        p.print(map);
+    }
 
     /* std::ofstream os("map2.dot");
     toDotty(os, map);
     os.close(); */
 
+    //std::cout << map.getInDegree("Tokyo") << ' ' << map.getOutDegree("Tokyo") << '\n';
+    auto ep = map.getEulerPath();
 
+    ep.print(map);
     return 0;
 }

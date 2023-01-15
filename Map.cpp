@@ -5,10 +5,11 @@ Vertex::Vertex() {}
 
 Vertex::Vertex(unsigned citiesCount) : neighbors(vector<unsigned>(citiesCount, 0)) {}
 
-Vertex::Vertex(const std::shared_ptr<const std::string> sharedName, std::vector<unsigned> &&neighbors)
+Vertex::Vertex(const std::shared_ptr<const std::string> sharedName, std::vector<unsigned> &&neighbors, unsigned outDegree)
 {
     this->name = sharedName;
     this->neighbors = std::move(neighbors);
+    this->outDegree = outDegree;
 }
 
 const string &Vertex::getName() const
@@ -21,6 +22,14 @@ const string &Vertex::getName() const
 const vector<unsigned> &Vertex::getNeighbors() const
 {
     return this->neighbors;
+}
+
+unsigned Vertex::getOutDegree() const {
+    return outDegree;
+}
+
+unsigned Vertex::getInDegree() const {
+    return inDegree;
 }
 
 unsigned &Vertex::operator[](size_t i)
@@ -140,7 +149,7 @@ bool Map::isVisited(unsigned id, const vector<int> &listVisited) const
     return listVisited[id] != -1;
 }
 
-unsigned Map::getNextUnvisitedID(vertexPriorityQueue &queue, const listVisitedVertices &visited) const
+/* unsigned Map::getNextUnvisitedID(vertexPriorityQueue &queue, const listVisitedVertices &visited) const
 {
     auto currentVertexID = queue.top().first;
 
@@ -150,7 +159,7 @@ unsigned Map::getNextUnvisitedID(vertexPriorityQueue &queue, const listVisitedVe
         currentVertexID = queue.top().first;
     }
     return currentVertexID;
-}
+} */
 
 bool Map::existsPath(const std::vector<unsigned> &neighbors, unsigned targetID) const
 {
@@ -301,30 +310,6 @@ std::unordered_set<unsigned> Map::getVerticesToAvoidAt(unsigned levelK, const st
     return toReturn;
 }
 
-Path Map::intersectPaths(const vector<Path>& paths) const {
-    Path toReturn;
-    
-    size_t vertexIndex = 0;
-    toReturn.pushVertex(paths[0][vertexIndex++], 0);
-
-    bool breakFlag = false;
-    while (!breakFlag && vertexIndex < paths[0].size()) {
-        
-        auto current = paths[0][vertexIndex];
-        for (size_t i = 1; i < paths.size() && !breakFlag; ++i) {
-            
-            if (paths[i][vertexIndex] != current) breakFlag = true;
-        }
-        
-        if (!breakFlag) {
-            auto vertexID = paths[0][vertexIndex], previous = paths[0][vertexIndex-1];
-            toReturn.pushVertex(paths[0][vertexIndex], adjacencyMatrix[previous][vertexID]);
-        }
-        vertexIndex++;
-    }
-    return toReturn;
-}
-
 std::vector<Path> Map::getFirstKShortestPaths(const string &startCity, const string &endCity, unsigned k) const
 {
     auto source = getCityID(startCity),
@@ -385,4 +370,113 @@ bool Map::canVisitAllVerticesFrom(const string& city) const {
         }
     }
     return allVisited;
+}
+
+vector<unsigned> Map::getDeadEndVertices() const {
+
+    vector<unsigned> toReturn;
+    for (size_t i = 0; i < adjacencyMatrix.size(); ++i) {
+
+        if (adjacencyMatrix[i].getOutDegree() == 0) {
+            toReturn.push_back(i);
+        }
+    }
+
+    return toReturn;
+}
+
+vector<Path> Map::findAllDeadEndStreets() const {
+    auto deadEnds = getDeadEndVertices();
+    vector<Path> toReturn;
+    for (unsigned deadEnd = 0; deadEnd < deadEnds.size(); ++deadEnd) {
+
+        for (unsigned source = 0; source < adjacencyMatrix.size(); ++source) {
+
+            if (adjacencyMatrix[source][deadEnd] > 0) {
+                vector<unsigned> street{source, deadEnd};
+                toReturn.push_back(Path{street, (int)adjacencyMatrix[source][deadEnd]});
+            }
+        }
+    }
+    return toReturn;
+}
+
+unsigned Map::getInDegree(const string& name) const {
+    unsigned id = getCityID(name);
+
+    return adjacencyMatrix[id].getInDegree();
+}
+
+unsigned Map::getOutDegree(const string& name) const {
+    unsigned id = getCityID(name);
+
+    return adjacencyMatrix[id].getOutDegree();
+}
+
+bool Map::isEulerianPathPossible() const {
+
+    int startVertex = 0,
+         endVertex = 0;
+    for (size_t i = 0; i < adjacencyMatrix.size() && startVertex <= 1 && endVertex <= 1; ++i) {
+
+        int inDeg = adjacencyMatrix[i].getInDegree(),
+            outDeg = adjacencyMatrix[i].getOutDegree();
+
+        if (abs(inDeg - outDeg) > 1) {
+            return false;
+        }
+        else if (inDeg - outDeg == 1) {
+            startVertex++;
+        }
+        else if (outDeg - inDeg == 1) {
+            endVertex++;
+        }
+    }
+    return endVertex == 0 && startVertex == 0 || endVertex == 1 && startVertex == 1;
+}
+
+unsigned Map::findStartNode() const {
+    
+    unsigned toReturn;
+    for (size_t id = 0; id < adjacencyMatrix.size(); ++id) {
+        
+        if (adjacencyMatrix[id].getOutDegree() - adjacencyMatrix[id].getInDegree() == 1) return id;
+
+        if (adjacencyMatrix[id].getOutDegree() > 0) toReturn = id;
+    }
+    return toReturn;
+}
+
+void Map::dfsEulerPath(std::unordered_set<string>& traversedEdges, Path& eulerPath, unsigned at, unsigned edgePrice) const {
+
+    auto neighbors = adjacencyMatrix[at].getNeighbors();
+
+    for (size_t id = 0; id < neighbors.size(); ++id) {
+
+        if (!existsPath(neighbors, id)) continue;
+
+        string edgeString = to_string(at) + to_string(id);
+
+        if (traversedEdges.find(edgeString) == traversedEdges.end()) {
+            traversedEdges.insert(edgeString);
+            dfsEulerPath(traversedEdges, eulerPath, id, neighbors[id]);    
+        }
+    }
+    eulerPath.pushVertex(at, edgePrice);
+}
+
+Path Map::getEulerPath() const {
+
+    if (isEulerianPathPossible()) {
+        unsigned start = findStartNode();
+
+        std::cout << start << '\n';
+
+        std::unordered_set<string> traversedEdges;
+        Path toReturn;
+        dfsEulerPath(traversedEdges, toReturn, start, 0);
+        return toReturn;
+    }
+
+    throw invalid_argument("No Euler Path possible on this graph!");
 }

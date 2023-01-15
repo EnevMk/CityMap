@@ -10,7 +10,10 @@ namespace fs = std::filesystem;
 
 class MapReader {
 
+    friend class Vertex;
+    void updateInDegrees(vector<Vertex>& adjacencyMatrix) const;
+    
 public:
-    Map readMap(const fs::path& filePath);
-
+    Map readMap(const fs::path& filePath) const;
+    
 };
